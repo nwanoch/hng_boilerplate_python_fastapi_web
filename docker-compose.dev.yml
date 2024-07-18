@@ -12,7 +12,7 @@ services:
 
     working_dir: /app
     volumes:
-      - .dev:/app
+      - ./dev:/app
     env_file:
       - .env.development
     depends_on:
