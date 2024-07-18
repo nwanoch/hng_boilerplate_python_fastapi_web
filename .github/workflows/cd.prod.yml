@@ -25,3 +25,4 @@ jobs:
             docker compose -f docker-compose.nginx.yml up --build -d
             docker compose -f docker-compose.prod.yml --env-file .env.production down -v
             docker compose -f docker-compose.prod.yml --env-file .env.production up --build -d
+            docker system prune -f
