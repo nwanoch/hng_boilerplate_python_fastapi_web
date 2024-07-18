@@ -23,6 +23,5 @@ jobs:
             cd hng_boilerplate_python_fastapi_web
             git pull origin dev
             docker compose -f docker-compose.nginx.yml up --build -d
-            docker compose -f docker-compose.dev.yml --env-file .env.development down -v
-            docker compose -f docker-compose.dev.yml --env-file .env.development up --build -d
+            docker compose -f docker-compose.dev.yml --env-file .env.development up --build -d --remove-orphans
             docker system prune -f
