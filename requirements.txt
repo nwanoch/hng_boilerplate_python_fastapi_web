@@ -10,3 +10,4 @@ python-dotenv
 bcrypt
 passlib
 pymysql
+psycopg2-binary
