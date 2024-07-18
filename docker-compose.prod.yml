@@ -10,6 +10,8 @@ services:
       - hng-network
     restart: unless-stopped
     working_dir: /app
+    volumes:
+      - ./prod:/app
     env_file:
       - .env.production
     depends_on:

@@ -11,6 +11,8 @@ services:
     restart: unless-stopped
 
     working_dir: /app
+    volumes:
+      - .dev:/app
     env_file:
       - .env.development
     depends_on:
