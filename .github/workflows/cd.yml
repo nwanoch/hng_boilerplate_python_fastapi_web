@@ -1,0 +1,25 @@
+name: Main Branch Deployment
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  access_server:
+    name: Deploy to server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Use SSH Action
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            cd hng_boilerplate_python_fastapi_web
+            git pull origin master
+            docker compose up -d --build
