@@ -14,11 +14,11 @@ services:
     env_file:
       - .env.development
     depends_on:
-      - db_dev
+      - dev_db
 
-  db_dev:
+  dev_db:
     image: postgres:14.12
-    container_name: db_dev
+    container_name: dev_db
     restart: always
     volumes:
       - pg-data-dev:/var/lib/postgresql/data
