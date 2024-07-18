@@ -8,6 +8,8 @@ services:
     networks:
       - hng-network
     restart: unless-stopped
+    ports:
+      - "7002:7001"
     working_dir: /app
     volumes:
       - .:/app
