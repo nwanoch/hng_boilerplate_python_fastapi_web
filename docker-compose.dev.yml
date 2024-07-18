@@ -22,7 +22,7 @@ services:
     container_name: dev_db
     restart: always
     volumes:
-      - pg-data-devv:/var/lib/postgresql/data
+      - dev_db:/var/lib/postgresql/data
     env_file:
       - .env.development
     environment:
@@ -33,7 +33,7 @@ services:
       - hng-network
 
 volumes:
-  pg-data-devv:
+  dev_db:
 
 networks:
   hng-network:
