@@ -40,7 +40,7 @@ app.add_middleware(
 @app.get("/", tags=["Home"])
 async def get_root(request: Request) -> dict:
     return {
-        "message": "Welcome to API Produc",
+        "message": "Welcome to API Prodddduc",
         "URL": "Divine is the ndaboski",
     }
 
