@@ -3,7 +3,7 @@ name: Main Branch Deployment
 on:
   push:
     branches:
-      - master
+      - dev
 
 jobs:
   access_server:
@@ -22,4 +22,5 @@ jobs:
           script: |
             cd hng_boilerplate_python_fastapi_web
             git pull origin master
-            docker compose up -d --build
+            docker compose -f docker-compose.nginx.yml up --build -d
+            docker compose -f docker-compose.dev.yml up --build -d

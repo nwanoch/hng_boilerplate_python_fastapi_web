@@ -28,20 +28,6 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD?Variable not set}
       - POSTGRES_USER=${DB_USER?Variable not set}
       - POSTGRES_DB=${DB_NAME?Variable not set}
-    ports:
-      - "5432:5432"
-    networks:
-      - hng-network
-
-  nginx:
-    image: nginx:stable-alpine3.19
-    container_name: nginx
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - app
     networks:
       - hng-network
 

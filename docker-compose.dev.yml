@@ -1,0 +1,39 @@
+name: hng_boilerplate
+
+services:
+  app_dev:
+    build:
+      context: .
+    container_name: app
+    networks:
+      - hng-network
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - .:/app
+    env_file:
+      - .env.development
+    depends_on:
+      - db
+
+  db_dev:
+    image: postgres:14.12
+    container_name: db
+    restart: always
+    volumes:
+      - pg-data-dev:/var/lib/postgresql/data
+    env_file:
+      - .env.development
+    environment:
+      - POSTGRES_PASSWORD=${DB_PASSWORD?Variable not set}
+      - POSTGRES_USER=${DB_USER?Variable not set}
+      - POSTGRES_DB=${DB_NAME?Variable not set}
+    networks:
+      - hng-network
+
+volumes:
+  pg-data-dev:
+
+networks:
+  hng-network:
+    driver: bridge
