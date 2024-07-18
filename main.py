@@ -41,7 +41,7 @@ app.add_middleware(
 async def get_root(request: Request) -> dict:
     return {
         "message": "Welcome to API",
-        "URL": "",
+        "URL": "Divine is the ndaboski",
     }
 
 
