@@ -5,6 +5,11 @@ on:
     branches:
       - dev
 
+needs:
+  ci:
+    workflow: ci.yml
+    type: workflow
+
 jobs:
   access_server:
     name: Deploy to server
