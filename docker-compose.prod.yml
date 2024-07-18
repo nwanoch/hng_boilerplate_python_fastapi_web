@@ -13,7 +13,7 @@ services:
     volumes:
       - .:/app
     env_file:
-      - .env
+      - .env.production
     depends_on:
       - db
 
@@ -24,7 +24,7 @@ services:
     volumes:
       - pg-data:/var/lib/postgresql/data
     env_file:
-      - .env
+      - .env.production
     environment:
       - POSTGRES_PASSWORD=${DB_PASSWORD?Variable not set}
       - POSTGRES_USER=${DB_USER?Variable not set}
