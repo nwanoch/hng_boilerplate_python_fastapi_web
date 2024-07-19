@@ -2,15 +2,15 @@ name: Main Branch Deployment
 
 on:
   workflow_run:
-    workflows: ["CIDEV"]
+    workflows: ["CI"]
     types:
       - completed
-
+    branches: [dev]
 
 jobs:
-  access_server:
-    name: Deploy to server
+  on-success:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -27,3 +27,8 @@ jobs:
             docker compose -f docker-compose.nginx.yml up --build -d
             docker compose -f docker-compose.dev.yml --env-file .env.development up --build -d --remove-orphans
             docker system prune -f
+  on-failure:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - run: echo 'The triggering workflow failed'
