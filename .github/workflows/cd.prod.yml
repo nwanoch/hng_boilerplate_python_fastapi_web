@@ -1,9 +1,10 @@
 name: Main Branch Deployment
 
 on:
-  push:
-    branches:
-      - master
+  workflow_run:
+    workflows: ["CIPROD"]
+    types:
+      - completed
 
 jobs:
   access_server:

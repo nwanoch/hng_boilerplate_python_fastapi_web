@@ -1,9 +1,10 @@
 name: Main Branch Deployment
 
 on:
-  push:
-    branches:
-      - dev
+  workflow_run:
+    workflows: ["CIDEV"]
+    types:
+      - completed
 
 jobs:
   access_server:
