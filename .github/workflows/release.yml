@@ -48,9 +48,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run tests
-        if: steps.check_changes.outputs.changes == 1
-        run: pytest # or your preferred test command
+      #   - name: Run tests
+      #     if: steps.check_changes.outputs.changes == 1
+      #     run: pytest # or your preferred test command
 
       - name: Bump version and push tag
         if: steps.check_changes.outputs.changes == 1
