@@ -116,7 +116,7 @@ jobs:
           while IFS='|' read -r name email; do
             username=$(get_github_username "$email")
             if [ -n "$username" ]; then
-              echo "<tr><td><img src='https://github.com/$username.png' width='50' height='50' alt='$name'></td><td><a href='https://github.com/$username'>$name</a></td></tr>" >> release_notes.md
+              echo "<tr><td><img src='https://avatars.githubusercontent.com/u/82214571?s=64&v=4' width='50' height='50' alt='$name'></td><td><a href='https://github.com/$username'>$name</a></td></tr>" >> release_notes.md
             else
               echo "<tr><td></td><td>$name</td></tr>" >> release_notes.md
             fi
