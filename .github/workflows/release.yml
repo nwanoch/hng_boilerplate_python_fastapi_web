@@ -9,7 +9,7 @@ jobs:
   check_and_release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0 # Fetch all history for all tags and branches
 
@@ -19,26 +19,26 @@ jobs:
           git fetch --tags
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
           if [ -z "$LATEST_TAG" ]; then
-            echo ::set-output name=VERSION::v0.0.0
-            echo ::set-output name=FIRST_RELEASE::true
+            echo "VERSION=v0.0.0" >> $GITHUB_OUTPUT
+            echo "FIRST_RELEASE=true" >> $GITHUB_OUTPUT
           else
-            echo ::set-output name=VERSION::$LATEST_TAG
-            echo ::set-output name=FIRST_RELEASE::false
+            echo "VERSION=$LATEST_TAG" >> $GITHUB_OUTPUT
+            echo "FIRST_RELEASE=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Check for changes since last tag
         id: check_changes
         run: |
           if [ "${{ steps.get_version.outputs.FIRST_RELEASE }}" == "true" ]; then
-            echo ::set-output name=changes::1
+            echo "changes=1" >> $GITHUB_OUTPUT
           else
             git diff --quiet ${{ steps.get_version.outputs.VERSION }}..HEAD -- .
-            echo ::set-output name=changes::$?
+            echo "changes=$?" >> $GITHUB_OUTPUT
           fi
 
       - name: Set up Python
         if: steps.check_changes.outputs.changes == 1
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: "3.9" # or your preferred Python version
 
@@ -66,7 +66,7 @@ jobs:
           git config --local user.name "GitHub Action"
           git tag -a $NEW_VERSION -m "Automated release $NEW_VERSION"
           git push origin $NEW_VERSION
-          echo ::set-output name=new_version::$NEW_VERSION
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
       - name: Create Release
         if: steps.check_changes.outputs.changes == 1
