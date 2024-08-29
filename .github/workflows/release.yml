@@ -1,0 +1,81 @@
+name: Automated Release (Every Minute)
+
+on:
+  schedule:
+    - cron: "* * * * *"
+
+jobs:
+  check_and_release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # Fetch all history for all tags and branches
+
+      - name: Get latest version
+        id: get_version
+        run: echo ::set-output name=VERSION::$(git describe --tags --abbrev=0)
+
+      - name: Check for changes since last tag
+        id: check_changes
+        run: |
+          git diff --quiet ${{ steps.get_version.outputs.VERSION }}..HEAD -- .
+          echo ::set-output name=changes::$?
+
+      - name: Set up Node.js
+        if: steps.check_changes.outputs.changes == 1
+        uses: actions/setup-node@v2
+        with:
+          node-version: "14"
+
+      - name: Install dependencies
+        if: steps.check_changes.outputs.changes == 1
+        run: npm ci
+
+      - name: Run tests
+        if: steps.check_changes.outputs.changes == 1
+        run: npm test
+
+      - name: Build project
+        if: steps.check_changes.outputs.changes == 1
+        run: npm run build
+
+      - name: Bump version and push tag
+        if: steps.check_changes.outputs.changes == 1
+        id: bump_version
+        run: |
+          # Assuming you're using semantic versioning (major.minor.patch)
+          IFS='.' read -ra VERSION_PARTS <<< "${{ steps.get_version.outputs.VERSION }}"
+          PATCH=$((VERSION_PARTS[2] + 1))
+          NEW_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$PATCH"
+          echo $NEW_VERSION
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git tag -a $NEW_VERSION -m "Automated release $NEW_VERSION"
+          git push origin $NEW_VERSION
+          echo ::set-output name=new_version::$NEW_VERSION
+
+      - name: Create Release
+        if: steps.check_changes.outputs.changes == 1
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+        with:
+          tag_name: ${{ steps.bump_version.outputs.new_version }}
+          release_name: Release ${{ steps.bump_version.outputs.new_version }}
+          body: |
+            Automated release for changes since ${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        if: steps.check_changes.outputs.changes == 1
+        uses: actions/upload-release-asset@v1
+        env:
+          TOKEN: ${{ secrets.TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/app.zip
+          asset_name: app.zip
+          asset_content_type: application/zip
