@@ -78,6 +78,31 @@ jobs:
           git push origin $NEW_VERSION
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
+      - name: Generate Release Notes
+        if: steps.check_changes.outputs.changes == 1
+        id: release_notes
+        run: |
+          PREVIOUS_TAG=${{ steps.get_version.outputs.VERSION }}
+          NEW_TAG=${{ steps.bump_version.outputs.new_version }}
+
+          echo "## What's Changed" > release_notes.md
+          echo "" >> release_notes.md
+
+          # Get commit messages
+          git log --pretty=format:"* %s (%an)" ${PREVIOUS_TAG}..HEAD >> release_notes.md
+
+          echo "" >> release_notes.md
+          echo "## Contributors" >> release_notes.md
+          echo "" >> release_notes.md
+
+          # Get unique contributors
+          git log --pretty=format:"%an" ${PREVIOUS_TAG}..HEAD | sort | uniq >> release_notes.md
+
+          echo "" >> release_notes.md
+          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREVIOUS_TAG}...${NEW_TAG}" >> release_notes.md
+
+          cat release_notes.md
+
       - name: Create Release
         if: steps.check_changes.outputs.changes == 1
         id: create_release
@@ -87,8 +112,7 @@ jobs:
         with:
           tag_name: ${{ steps.bump_version.outputs.new_version }}
           release_name: Release ${{ steps.bump_version.outputs.new_version }}
-          body: |
-            Automated release for changes since ${{ steps.get_version.outputs.VERSION }}
+          body_path: release_notes.md
           draft: false
           prerelease: false
 
