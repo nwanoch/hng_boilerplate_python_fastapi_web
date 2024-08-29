@@ -29,11 +29,22 @@ jobs:
       - name: Check for changes since last tag
         id: check_changes
         run: |
-          if [ "${{ steps.get_version.outputs.FIRST_RELEASE }}" == "true" ]; then
+          echo "Current version: ${{ steps.get_version.outputs.VERSION }}"
+          echo "Is first release: ${{ steps.get_version.outputs.FIRST_RELEASE }}"
+
+          if [[ "${{ steps.get_version.outputs.FIRST_RELEASE }}" == "true" ]]; then
+            echo "This is the first release, changes=1"
             echo "changes=1" >> $GITHUB_OUTPUT
           else
-            git diff --quiet ${{ steps.get_version.outputs.VERSION }}..HEAD -- .
-            echo "changes=$?" >> $GITHUB_OUTPUT
+            echo "Checking for changes since ${{ steps.get_version.outputs.VERSION }}"
+            git diff --exit-code ${{ steps.get_version.outputs.VERSION }}..HEAD -- .
+            if [ $? -eq 0 ]; then
+              echo "No changes detected, changes=0"
+              echo "changes=0" >> $GITHUB_OUTPUT
+            else
+              echo "Changes detected, changes=1"
+              echo "changes=1" >> $GITHUB_OUTPUT
+            fi
           fi
 
       - name: Set up Python
@@ -61,7 +72,7 @@ jobs:
             PATCH=$((VERSION_PARTS[2] + 1))
             NEW_VERSION="v${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$PATCH"
           fi
-          echo $NEW_VERSION
+          echo "New version: $NEW_VERSION"
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git tag -a $NEW_VERSION -m "Automated release $NEW_VERSION"
