@@ -1,11 +1,9 @@
-name: Automated Release (On Push and Every Minute)
+name: Automated Release (On Push)
 
 on:
   push:
     branches:
       - main # or your default branch name
-  schedule:
-    - cron: "* * * * *"
 
 jobs:
   check_and_release:
@@ -19,13 +17,24 @@ jobs:
         id: get_version
         run: |
           git fetch --tags
-          echo ::set-output name=VERSION::$(git describe --tags --abbrev=0 || echo v0.0.0)
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LATEST_TAG" ]; then
+            echo ::set-output name=VERSION::v0.0.0
+            echo ::set-output name=FIRST_RELEASE::true
+          else
+            echo ::set-output name=VERSION::$LATEST_TAG
+            echo ::set-output name=FIRST_RELEASE::false
+          fi
 
       - name: Check for changes since last tag
         id: check_changes
         run: |
-          git diff --quiet ${{ steps.get_version.outputs.VERSION }}..HEAD -- .
-          echo ::set-output name=changes::$?
+          if [ "${{ steps.get_version.outputs.FIRST_RELEASE }}" == "true" ]; then
+            echo ::set-output name=changes::1
+          else
+            git diff --quiet ${{ steps.get_version.outputs.VERSION }}..HEAD -- .
+            echo ::set-output name=changes::$?
+          fi
 
       - name: Set up Node.js
         if: steps.check_changes.outputs.changes == 1
@@ -49,12 +58,15 @@ jobs:
         if: steps.check_changes.outputs.changes == 1
         id: bump_version
         run: |
-          # Assuming you're using semantic versioning (major.minor.patch)
           VERSION="${{ steps.get_version.outputs.VERSION }}"
           VERSION_WITHOUT_V="${VERSION#v}"
-          IFS='.' read -ra VERSION_PARTS <<< "$VERSION_WITHOUT_V"
-          PATCH=$((VERSION_PARTS[2] + 1))
-          NEW_VERSION="v${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$PATCH"
+          if [ -z "$VERSION_WITHOUT_V" ]; then
+            NEW_VERSION="v0.0.1"
+          else
+            IFS='.' read -ra VERSION_PARTS <<< "$VERSION_WITHOUT_V"
+            PATCH=$((VERSION_PARTS[2] + 1))
+            NEW_VERSION="v${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$PATCH"
+          fi
           echo $NEW_VERSION
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
