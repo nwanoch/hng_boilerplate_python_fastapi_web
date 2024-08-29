@@ -1,6 +1,9 @@
-name: Automated Release (Every Minute)
+name: Automated Release (On Push and Every Minute)
 
 on:
+  push:
+    branches:
+      - main # or your default branch name
   schedule:
     - cron: "* * * * *"
 
@@ -14,7 +17,9 @@ jobs:
 
       - name: Get latest version
         id: get_version
-        run: echo ::set-output name=VERSION::$(git describe --tags --abbrev=0)
+        run: |
+          git fetch --tags
+          echo ::set-output name=VERSION::$(git describe --tags --abbrev=0 || echo v0.0.0)
 
       - name: Check for changes since last tag
         id: check_changes
@@ -45,9 +50,9 @@ jobs:
         id: bump_version
         run: |
           # Assuming you're using semantic versioning (major.minor.patch)
-          IFS='.' read -ra VERSION_PARTS <<< "${{ steps.get_version.outputs.VERSION }}"
+          IFS='.' read -ra VERSION_PARTS <<< "${{ steps.get_version.outputs.VERSION#v }}"
           PATCH=$((VERSION_PARTS[2] + 1))
-          NEW_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$PATCH"
+          NEW_VERSION="v${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$PATCH"
           echo $NEW_VERSION
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
