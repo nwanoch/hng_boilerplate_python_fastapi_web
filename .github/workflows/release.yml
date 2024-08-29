@@ -37,8 +37,7 @@ jobs:
             echo "changes=1" >> $GITHUB_OUTPUT
           else
             echo "Checking for changes since ${{ steps.get_version.outputs.VERSION }}"
-            git diff --exit-code ${{ steps.get_version.outputs.VERSION }}..HEAD -- .
-            if [ $? -eq 0 ]; then
+            if git diff --quiet ${{ steps.get_version.outputs.VERSION }}..HEAD -- .; then
               echo "No changes detected, changes=0"
               echo "changes=0" >> $GITHUB_OUTPUT
             else
