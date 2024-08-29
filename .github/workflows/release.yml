@@ -1,4 +1,4 @@
-name: Automated Release (On Push)
+name: Automated Release (Python FastAPI)
 
 on:
   push:
@@ -36,23 +36,21 @@ jobs:
             echo ::set-output name=changes::$?
           fi
 
-      - name: Set up Node.js
+      - name: Set up Python
         if: steps.check_changes.outputs.changes == 1
-        uses: actions/setup-node@v2
+        uses: actions/setup-python@v2
         with:
-          node-version: "14"
+          python-version: "3.9" # or your preferred Python version
 
       - name: Install dependencies
         if: steps.check_changes.outputs.changes == 1
-        run: npm ci
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Run tests
         if: steps.check_changes.outputs.changes == 1
-        run: npm test
-
-      - name: Build project
-        if: steps.check_changes.outputs.changes == 1
-        run: npm run build
+        run: pytest # or your preferred test command
 
       - name: Bump version and push tag
         if: steps.check_changes.outputs.changes == 1
@@ -88,6 +86,10 @@ jobs:
           draft: false
           prerelease: false
 
+      - name: Zip Project
+        if: steps.check_changes.outputs.changes == 1
+        run: zip -r release.zip . -x "*.git*"
+
       - name: Upload Release Asset
         if: steps.check_changes.outputs.changes == 1
         uses: actions/upload-release-asset@v1
@@ -95,6 +97,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/app.zip
-          asset_name: app.zip
+          asset_path: ./release.zip
+          asset_name: release.zip
           asset_content_type: application/zip
